@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Global Business Guide</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {}
+  }
+}
+</script>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+</style>
+</head>
+<body class="bg-slate-50">
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useMemo } = React;
+
+// ─── DATA ────────────────────────────────────────────────────────────────────
+
+const countries = [
+  {
+    code: 'GH', name: 'Ghana', flag: '🇬🇭', region: 'Africa',
+    tagline: 'Gateway to West Africa',
+    overview: "Ghana is one of Africa's most stable democracies with a growing economy, English as the official language, and a welcoming environment for foreign investors.",
+    currency: 'Ghanaian Cedi (GHS)', language: 'English',
+    businessClimate: 'Pro-business with a one-stop registration portal (ORC) and investor-friendly policies.',
+    highlights: ['No minimum capital for foreign companies', 'English-speaking workforce', 'Stable democracy', 'Fast-growing digital economy'],
+    businessTypes: [
+      {
+        name: 'Limited Liability Company (LLC)', difficulty: 'Moderate',
+        timeframe: '2–4 weeks', cost: '$1,500–$3,000 USD',
+        description: 'The most common structure for foreign investors. Requires at least 2 directors and a local address.',
+        requirements: ['Minimum 2 directors (can be non-residents)', 'Registered office address in Ghana', '$500,000 USD minimum capital for wholly foreign-owned businesses'],
+        steps: [
+          { title: 'Reserve your company name', description: 'Search and reserve your business name through the Office of the Registrar of Companies (ORC) online portal at orc.gov.gh.', documents: ['Proposed company name', 'Alternative names (2-3 options)'], tips: 'Names cannot be identical or too similar to existing companies.' },
+          { title: 'Prepare incorporation documents', description: 'Draft and notarize the Regulations (Articles of Association) and prepare the required forms.', documents: ['Form 3', 'Regulations/Articles of Association', 'Passport copies of all directors', 'Proof of address'] },
+          { title: 'Register with the ORC', description: 'Submit all documents to the Office of the Registrar of Companies online or in person.', documents: ['Completed Form 3', 'Notarized Regulations', 'ID documents', 'Proof of registered office'] },
+          { title: 'Obtain GIPC certificate', description: 'Foreign-owned businesses must register with the Ghana Investment Promotion Centre.', documents: ['Certificate of Incorporation', 'Business plan', 'GIPC application form'], tips: 'Minimum equity capital for foreign businesses is $500,000 USD.' },
+          { title: 'Register for Tax (TIN)', description: 'Obtain a Tax Identification Number from the Ghana Revenue Authority (GRA).', documents: ['Certificate of Incorporation', "Directors' IDs"] },
+          { title: 'Open a corporate bank account', description: 'Open a Ghana cedis business account at any commercial bank.', documents: ['Certificate of Incorporation', 'Board resolution', "Directors' passports"] },
+        ]
+      },
+      {
+        name: 'Free Zone Enterprise', difficulty: 'Moderate',
+        timeframe: '4–8 weeks', cost: '$2,000–$5,000 USD',
+        description: 'Operate in a designated Free Zone with 100% foreign ownership, tax exemptions for 10 years, and duty-free imports.',
+        requirements: ['Minimum investment of $100,000 USD', 'Must export at least 70% of output', 'Must operate in an approved free zone area'],
+        steps: [
+          { title: 'Apply to Ghana Free Zones Authority (GFZA)', description: 'Submit an application to the GFZA with your business proposal and project plan.', documents: ['Application form', 'Business plan', 'Financial projections', 'Passport copies'] },
+          { title: 'Receive a Free Zone license', description: 'GFZA reviews your application (usually 21 days) and issues a license if approved.', tips: 'At least 70% of your production must be exported.' },
+          { title: 'Register with the ORC', description: 'Incorporate your company with the ORC using the GFZA license.', documents: ['GFZA license', 'Articles of Association', 'Director IDs'] },
+          { title: 'Set up in a Free Zone enclave', description: 'Establish your operations within an approved free zone enclave.', documents: ['Lease agreement', 'GFZA license'] },
+        ]
+      }
+    ],
+    residencyOptions: [
+      {
+        name: 'Investor Residence Permit', difficulty: 'Moderate',
+        timeframe: '4–8 weeks', cost: '$1,000–$2,500 USD per year',
+        description: 'For foreign nationals who have invested in a Ghana-registered business.',
+        requirements: ['Valid GIPC certificate', 'Minimum $500,000 USD investment', 'Clean criminal record'],
+        steps: [
+          { title: 'Register your business and obtain GIPC certificate', description: 'Ensure your company is registered and you hold a valid GIPC certificate.', documents: ['GIPC certificate', 'Certificate of Incorporation'] },
+          { title: 'Apply to Ghana Immigration Service (GIS)', description: 'Submit a Residence Permit application at the GIS office.', documents: ['Valid passport', 'GIPC certificate', 'Company registration documents', 'Yellow fever vaccination', 'Police clearance', 'Medical report'] },
+          { title: 'Pay application fees and attend biometrics', description: 'Pay fees and visit GIS for fingerprinting and photograph.' },
+          { title: 'Collect your Residence Permit', description: 'Return to GIS to collect your permit card.' }
+        ]
+      }
+    ],
+    citizenshipPathways: [
+      {
+        name: 'Naturalization', difficulty: 'Complex',
+        timeframe: '6–24 months after eligibility', cost: '$500–$1,500 USD',
+        description: 'After residing legally in Ghana for 5 years, you can apply for citizenship by naturalization.',
+        requirements: ['5 years legal residency', 'Good character', 'Knowledge of English', 'May require renunciation of previous citizenship'],
+        steps: [
+          { title: 'Maintain legal residency for 5 years', description: 'Hold a valid residence permit continuously for at least 5 years.' },
+          { title: 'Obtain police clearance', description: 'Get clearance from Ghana Police Service and your home country.' },
+          { title: 'Submit naturalization application', description: 'File the naturalization application with the Ministry of Interior.', documents: ['Application form', 'Residence permits', 'Birth certificate', 'Police clearance', 'Proof of income'] },
+          { title: 'Attend interview', description: 'Attend a citizenship interview at the Ministry of Interior.' },
+          { title: 'Oath of allegiance', description: 'If approved, take an oath of allegiance and receive your citizenship certificate.' }
+        ]
+      },
+      {
+        name: 'Right of Abode (African Diaspora)', difficulty: 'Moderate',
+        timeframe: '4–12 weeks', cost: '$500–$1,000 USD',
+        description: "Ghana's Right of Abode allows people of African descent to live and work indefinitely without a residence permit.",
+        requirements: ['Proof of African descent', 'Valid passport', 'Medical certificate', 'Police clearance'],
+        steps: [
+          { title: 'Determine eligibility', description: 'You must be of African descent (including African Americans, Afro-Caribbeans, etc.).' },
+          { title: 'Apply to Ghana Immigration Service', description: 'Submit the Right of Abode application with proof of African ancestry.', documents: ['Application form', 'Passport', 'Proof of African heritage', 'Passport photos', 'Medical report', 'Police clearance'] },
+          { title: 'Pay fees and await approval', description: "Pay the application fees. This grants indefinite right to live and work in Ghana — not full citizenship.", tips: 'This is a permanent status — not citizenship — but grants indefinite right to live and work in Ghana.' }
+        ]
+      }
+    ]
+  },
+  {
+    code: 'AE', name: 'UAE (Dubai)', flag: '🇦🇪', region: 'Middle East',
+    tagline: 'Global Hub for Business & Lifestyle',
+    overview: "The UAE, particularly Dubai, is one of the world's most business-friendly destinations. With 0% income tax, world-class infrastructure, and over 40 free zones, it's a top choice for entrepreneurs.",
+    currency: 'UAE Dirham (AED)', language: 'Arabic (English widely used)',
+    businessClimate: 'Exceptional — 0% personal and corporate income tax, cutting-edge infrastructure, and strategic global location.',
+    highlights: ['0% personal income tax', '100% foreign ownership in free zones', 'Golden Visa residency', 'World-class infrastructure', '40+ free zones'],
+    businessTypes: [
+      {
+        name: 'Free Zone Company (FZCO / FZE)', difficulty: 'Easy',
+        timeframe: '1–2 weeks (license); 3–6 weeks (with visa)', cost: 'AED 12,000–50,000/year ($3,300–$13,600 USD)',
+        description: 'Most popular option for foreign entrepreneurs. 100% foreign ownership and allows UAE residence visa sponsorship.',
+        requirements: ['Valid passport', 'No UAE criminal record', 'Minimum capital varies by free zone', 'Office space (usually included in license)'],
+        steps: [
+          { title: 'Choose your free zone', description: 'Popular ones: DMCC (trading), DIFC (financial), Dubai Internet City (tech), IFZA (general), Sharjah Free Zone (cost-effective).', tips: 'IFZA and Sharjah are the most affordable. DMCC and DIFC offer prestige.' },
+          { title: 'Select your business activity', description: 'Define your licensed activities. Each free zone has a list of permitted activities.' },
+          { title: 'Choose a company name', description: 'Select a compliant name — no offensive words, must include legal suffix (FZE for sole owner, FZCO for 2+ shareholders).' },
+          { title: 'Submit application and documents', description: 'Submit your application to the free zone authority.', documents: ['Passport copy', 'Passport-size photo', 'Proof of address', 'Business plan (some free zones)'] },
+          { title: 'Pay license fees and receive your license', description: 'Pay the annual license fee. Approval often takes 3–7 days.', tips: 'License costs range from AED 5,500 (~$1,500) at affordable free zones to AED 50,000+ at premium ones.' },
+          { title: 'Open a corporate bank account', description: 'Emirates NBD, Mashreq, RAKBank are common choices. Fintech options like Wio or Airwallex are faster.', tips: 'Traditional bank accounts can take 4–8 weeks. Fintech accounts open in days.' },
+          { title: 'Apply for UAE residence visa', description: 'With your trade license, apply for a 2-year or 3-year UAE residence visa as an investor/partner.', documents: ['Trade license', 'Passport', 'Medical fitness test', 'Health insurance'] }
+        ]
+      },
+      {
+        name: 'Mainland LLC', difficulty: 'Moderate',
+        timeframe: '2–4 weeks', cost: 'AED 15,000–40,000 ($4,000–$11,000 USD)',
+        description: 'A mainland company allows you to trade directly across the UAE. Since 2021, 100% foreign ownership is allowed in most sectors.',
+        requirements: ['Physical office space required', '100% foreign ownership allowed in most sectors since 2021'],
+        steps: [
+          { title: 'Choose a trade name and activity', description: 'Reserve your trade name via the Department of Economy and Tourism (DET) for Dubai mainland.' },
+          { title: 'Get initial approval from DET', description: 'Submit your application for initial approval of your business activity.', documents: ['Application form', 'Passport copies'] },
+          { title: 'Lease office space and get Ejari', description: 'Sign a lease for physical office space (minimum 200 sq ft) and register it via Ejari.', tips: 'Co-working spaces or Flexi-offices are accepted in some activities.' },
+          { title: 'Draft and notarize the MOA', description: 'Have a lawyer draft and notarize the Memorandum of Association at a Dubai Notary.', documents: ['MOA', 'Passport copies of all shareholders'] },
+          { title: 'Submit for final approval and receive license', description: 'Submit all documents and collect your trade license (usually 1–3 days after final submission).' },
+          { title: 'Apply for investor residence visa', description: 'Apply for a 3-year residence visa as a company partner/investor.' }
+        ]
+      }
+    ],
+    residencyOptions: [
+      {
+        name: 'Investor Residence Visa (2–3 Year)', difficulty: 'Easy',
+        timeframe: '3–6 weeks', cost: 'AED 3,000–6,000 ($820–$1,640 USD)',
+        description: 'Get a UAE residence visa by registering a company in a free zone or mainland. Renewable every 2–3 years.',
+        requirements: ['Valid trade license', 'Valid passport', 'Clean health record (no HIV, TB, Hepatitis)', 'Health insurance (mandatory)'],
+        steps: [
+          { title: 'Register your business', description: 'Obtain a UAE trade license (free zone or mainland).' },
+          { title: 'Apply for entry permit', description: 'Apply through your free zone authority or an Amer Center.', documents: ['Trade license', 'Passport', 'Photo'] },
+          { title: 'Complete medical fitness test', description: 'Visit a MOHAP-approved clinic for blood tests and chest X-ray.', tips: 'Results usually ready in 1–3 days.' },
+          { title: 'Apply for Emirates ID', description: 'Submit Emirates ID application at an ICA-approved center.' },
+          { title: 'Receive visa stamp and Emirates ID', description: 'Your passport gets stamped with the residence visa and Emirates ID is issued.', tips: 'Emirates ID is your primary ID for banking, utilities, and services.' }
+        ]
+      },
+      {
+        name: 'Golden Visa (10-Year Residency)', difficulty: 'Moderate',
+        timeframe: '2–8 weeks', cost: 'AED 2,800–4,800 ($760–$1,300 USD) government fees',
+        description: 'A long-term 10-year residency visa for investors, entrepreneurs, and skilled professionals. No need to renew every 2–3 years.',
+        requirements: ['AED 2,000,000 (~$545,000 USD) in real estate OR AED 500,000+ in a business OR approval from accredited incubator for startups OR skilled professional in a priority field'],
+        steps: [
+          { title: 'Determine your eligibility category', description: 'Available to: real estate investors (AED 2M+ property), business investors, startups backed by a UAE incubator, outstanding talents.', tips: 'For entrepreneurs: startup with AED 500,000 minimum capital or approval from UAE incubator.' },
+          { title: 'Prepare documentation', description: 'Gather docs based on your category.', documents: ['Passport', 'Proof of investment (title deed, share certificate)', 'Bank statements'] },
+          { title: 'Apply via ICA or GDRFA Dubai', description: 'Submit your Golden Visa application online via the ICA smart services portal.' },
+          { title: 'Complete medical test and biometrics', description: 'Complete the standard medical fitness test.' },
+          { title: 'Receive Golden Visa and Emirates ID', description: 'Your 10-year residence visa is stamped and Emirates ID issued.', tips: 'Family members can be sponsored on your Golden Visa.' }
+        ]
+      }
+    ],
+    citizenshipPathways: [
+      {
+        name: 'UAE Citizenship by Exceptional Contribution', difficulty: 'Complex',
+        timeframe: 'Not predictable (invitation-based)', cost: 'Not applicable',
+        description: 'UAE citizenship is rarely granted and is by nomination only, extended to exceptional investors, professionals, and talented individuals.',
+        requirements: ['No direct application — invitation/nomination only', 'Exceptional investment or contribution to UAE', 'Clean criminal record'],
+        steps: [
+          { title: 'Understand the eligibility', description: 'UAE citizenship is only granted by nomination. It targets major investors (AED 10M+), top doctors/scientists, and renowned artists.' },
+          { title: 'Be nominated by a UAE authority', description: 'A UAE ruler, Cabinet member, or designated government entity nominates you.' },
+          { title: 'Submit required documents upon nomination', description: 'If nominated, submit comprehensive documentation.', documents: ['Passport', 'Residence visa history', 'Evidence of investment or contribution', 'Security clearance'] },
+          { title: 'Receive citizenship', description: 'If approved, you receive a UAE passport. Dual citizenship is allowed — you can retain your original nationality.', tips: 'UAE passport grants 180+ countries visa-free access.' }
+        ]
+      }
+    ]
+  },
+  {
+    code: 'PT', name: 'Portugal', flag: '🇵🇹', region: 'Europe',
+    tagline: 'EU Access, Affordable Living, Atlantic Charm',
+    overview: "Portugal offers one of Europe's most attractive residency and citizenship pathways. As an EU member, a Portuguese passport grants access to live and work across 27 EU countries.",
+    currency: 'Euro (EUR)', language: 'Portuguese (English widely spoken)',
+    businessClimate: 'Growing startup ecosystem, NHR tax regime for new residents, EU single market access.',
+    highlights: ['EU member — passport grants 27-country access', 'NHR tax regime (flat tax on foreign income for 10 years)', 'Golden Visa leads to citizenship in 5 years', 'Affordable cost of living vs. Western Europe'],
+    businessTypes: [
+      {
+        name: 'Lda — Private Limited Company', difficulty: 'Easy',
+        timeframe: '1–5 days (via Empresa na Hora)', cost: '€360 + NIF and bank account costs',
+        description: "The most common business structure in Portugal, equivalent to an LLC. Minimum capital of just €1.",
+        requirements: ['At least 1 shareholder and 1 director', 'Minimum capital €1', 'Portuguese NIF for all founders', 'Registered office address in Portugal'],
+        steps: [
+          { title: 'Get a Portuguese Tax Number (NIF)', description: 'Obtain a NIF from a Portuguese tax office or via a fiscal representative if non-resident.', documents: ['Passport', 'Proof of address'], tips: 'Non-residents need to appoint a fiscal representative to obtain a NIF remotely.' },
+          { title: 'Open a Portuguese bank account', description: 'Open a business bank account to deposit share capital.', tips: 'Millennium BCP, Caixa Geral, and Activobank are popular options.' },
+          { title: 'Register via "Empresa na Hora"', description: "Portugal's 'Company in One Hour' service allows you to register in a single day.", documents: ['NIFs of all shareholders', 'Identification documents', 'Proof of share capital deposit'], tips: 'The €360 fee covers everything.' },
+          { title: 'Register for VAT (if applicable)', description: 'If your annual turnover will exceed €13,500, register for VAT with Finanças.' }
+        ]
+      }
+    ],
+    residencyOptions: [
+      {
+        name: 'D8 Visa — Digital Nomad / Remote Work Visa', difficulty: 'Moderate',
+        timeframe: '2–6 months', cost: '€90 visa fee + €320 residence permit fee',
+        description: 'For non-EU citizens who work remotely for foreign companies. Grants a 1-year residence permit, renewable.',
+        requirements: ['Remote work income from non-Portuguese sources', 'Income ≥ €3,480/month (4x minimum wage)', 'Health insurance', 'Criminal background check', 'Proof of accommodation'],
+        steps: [
+          { title: 'Obtain a Portuguese NIF', description: 'Get your Portuguese tax number via a fiscal representative.' },
+          { title: 'Open a Portuguese bank account', description: 'Required for visa application.' },
+          { title: 'Prepare documentation', description: 'Gather all required documents.', documents: ['Valid passport', 'Proof of remote work income', 'Health insurance', 'Criminal background check (apostilled)', 'Proof of accommodation'] },
+          { title: 'Apply at a Portuguese consulate', description: 'Submit at the Portuguese consulate in your home country.', tips: 'Book appointments early — some consulates have 8–16 week waiting lists.' },
+          { title: 'Enter Portugal and schedule AIMA appointment', description: 'Once in Portugal, schedule an appointment with AIMA to complete your residence permit.' },
+          { title: 'Receive your Residence Permit card', description: 'Attend your AIMA appointment, provide biometrics, and receive your Cartão de Residência.' }
+        ]
+      },
+      {
+        name: 'Golden Visa (ARI)', difficulty: 'Moderate',
+        timeframe: '6–18 months', cost: '€533 application + €5,324 issuance fee + investment amount',
+        description: "Portugal's investor visa grants residency in exchange for qualifying investments. Leads to citizenship in 5 years.",
+        requirements: ['Qualifying investment (€250,000–€500,000)', 'Clean criminal record', 'Spend minimum 7 days/year in Portugal'],
+        steps: [
+          { title: 'Choose a qualifying investment', description: 'Options include: €500,000+ in investment funds, €500,000+ in scientific research, €250,000+ in cultural heritage.', tips: 'Real estate is no longer qualifying (as of Oct 2023). Fund investments are the most popular.' },
+          { title: 'Obtain a Portuguese NIF and bank account', description: 'Required before making the investment.' },
+          { title: 'Make the qualifying investment', description: 'Transfer funds and complete your investment.', documents: ['Investment certificate', 'Fund subscription agreement', 'Proof of transfer'] },
+          { title: 'Submit Golden Visa application via ARI portal', description: 'Apply online via the AIMA ARI portal.', documents: ['Passport', 'NIF', 'Proof of investment', 'Criminal background check', 'Health insurance'] },
+          { title: 'Attend AIMA biometrics appointment', description: 'Schedule and attend in-person biometrics in Portugal.' },
+          { title: 'Receive Golden Visa', description: 'Your 2-year renewable Golden Visa is issued. Spend only 7 days/year to maintain it.' }
+        ]
+      }
+    ],
+    citizenshipPathways: [
+      {
+        name: 'Naturalization (5-Year Residency)', difficulty: 'Moderate',
+        timeframe: '12–36 months after applying', cost: '€175 application fee + language test costs (~€150)',
+        description: 'After 5 years of legal residency (or 5 years of Golden Visa), apply for Portuguese citizenship — EU passport with access to 27 EU countries + 185+ visa-free.',
+        requirements: ['5 years legal residency', 'A2 Portuguese language certificate', 'Clean criminal record in Portugal', 'Portugal allows dual citizenship'],
+        steps: [
+          { title: 'Maintain 5 years of legal residency', description: 'Hold a valid Portuguese residence permit for 5 continuous years. Golden Visa holders have no minimum stay.' },
+          { title: 'Pass Portuguese language test (A2 level)', description: 'Take the CIPLE exam or provide proof of a Portuguese language course.', tips: 'A2 is basic — conversational basics and simple written understanding.' },
+          { title: 'Gather required documents', description: 'Compile your citizenship application.', documents: ['Valid passport', 'Residence permit', 'Criminal record certificates', 'Portuguese language certificate (A2+)', 'Birth certificate (apostilled)'] },
+          { title: 'Submit application to IRN', description: 'File your citizenship application online via the IRN portal.' },
+          { title: 'Attend oath ceremony', description: 'If approved, take an oath of allegiance.' },
+          { title: 'Apply for Portuguese passport', description: 'Portugal allows dual citizenship — you do NOT need to give up your original nationality.', tips: 'Portugal allows dual citizenship.' }
+        ]
+      }
+    ]
+  },
+  {
+    code: 'SG', name: 'Singapore', flag: '🇸🇬', region: 'Asia',
+    tagline: "Asia's Business Capital",
+    overview: "Singapore consistently ranks as the world's easiest place to do business. A strategic hub for Asia with low tax rates, strong rule of law, and world-class infrastructure.",
+    currency: 'Singapore Dollar (SGD)', language: 'English (official), Mandarin, Malay, Tamil',
+    businessClimate: "World's #1 business environment. 17% corporate tax, efficient government, top-tier banking.",
+    highlights: ['Ranked top globally for ease of doing business', '17% corporate tax with startup exemptions', 'Can incorporate in 1 day online', 'Gateway to Southeast Asian markets'],
+    businessTypes: [
+      {
+        name: 'Private Limited Company (Pte. Ltd.)', difficulty: 'Easy',
+        timeframe: '1–3 hours (online)',
+        cost: 'SGD 315 (ACRA fees) + SGD 1,500–3,000 (corporate secretary)',
+        description: '100% foreign ownership allowed. Can sponsor Employment Passes for foreign talent.',
+        requirements: ['At least 1 locally resident director', 'Minimum paid-up capital SGD 1', 'Singapore registered office address'],
+        steps: [
+          { title: 'Appoint a local director', description: 'Every Singapore company must have at least one director ordinarily resident in Singapore.', tips: 'You can hire a nominee director service (~SGD 1,000–2,000/year) until you get your Employment Pass.' },
+          { title: 'Reserve company name via ACRA Bizfile', description: 'Check name availability at acra.gov.sg. Names are reserved for 60 days (SGD 15 fee).' },
+          { title: 'Prepare incorporation documents', description: 'Prepare the company constitution — or use the standard Model Constitution.' },
+          { title: 'Register with ACRA', description: 'Submit via Bizfile+ portal. For foreigners, use a registered filing agent.', tips: 'ACRA approves most applications within 1–3 hours.' },
+          { title: 'Receive your UEN', description: "You'll receive a Unique Entity Number which is your company registration number." },
+          { title: 'Open a corporate bank account', description: 'DBS, OCBC, UOB (traditional) or Aspire, Airwallex (digital).', tips: 'Digital banks are easier to open remotely.' },
+        ]
+      }
+    ],
+    residencyOptions: [
+      {
+        name: 'EntrePass (Entrepreneur Pass)', difficulty: 'Complex',
+        timeframe: '6–10 weeks', cost: 'SGD 105 application + SGD 225 issuance fee',
+        description: 'A Singapore work visa for innovative entrepreneurs starting a new business. Allows you to start and operate a Singapore business.',
+        requirements: ['Novel, innovative business concept', 'VC/incubator backing preferred', 'Minimum SGD 50,000 paid-up capital recommended'],
+        steps: [
+          { title: 'Determine eligibility', description: 'Must be starting an innovative, scalable business. Criteria: VC/PE-funded, incubator-backed, or significant IP/R&D.' },
+          { title: 'Prepare your business plan', description: 'Prepare a detailed business plan.', documents: ['Business plan', 'CV/resume', 'Patents or credentials', 'Financial projections'] },
+          { title: 'Submit application to MOM', description: 'Apply via the Employment Pass Online portal at mom.gov.sg.', tips: 'Approval takes 8 weeks. Rejection rate is high — engage an immigration consultant.' },
+          { title: 'Incorporate your company in Singapore', description: 'Once EntrePass is approved in principle, register your Pte. Ltd. with ACRA.' },
+          { title: 'Complete formalities and receive EntrePass', description: 'Provide biometrics at ICA and collect your EntrePass card.' }
+        ]
+      }
+    ],
+    citizenshipPathways: [
+      {
+        name: 'Naturalization', difficulty: 'Complex',
+        timeframe: '12–24 months after applying', cost: 'Nominal fees',
+        description: "Singapore citizenship after 2 years as PR. Singapore does NOT allow dual citizenship.",
+        requirements: ['2+ years as Singapore PR', 'Good character', 'Must renounce existing nationality'],
+        steps: [
+          { title: 'Hold PR status for 2+ years', description: 'Maintain your Singapore PR for at least 2 years.' },
+          { title: 'Submit citizenship application to ICA', description: 'Compile and submit all documents.', documents: ['Passport', 'PR card', 'Educational certificates', 'Tax statements'] },
+          { title: 'Renounce existing citizenship', description: 'If approved, you MUST renounce your existing citizenship. Singapore does not allow dual citizenship.', tips: 'Major consideration — Singapore passport is strong (192+ countries visa-free) but you lose your original citizenship.' },
+          { title: 'Take citizenship oath', description: 'Attend citizenship ceremony, take the oath, and receive your Singapore IC (pink identity card).' }
+        ]
+      }
+    ]
+  },
+  {
+    code: 'CA', name: 'Canada', flag: '🇨🇦', region: 'North America',
+    tagline: 'Welcoming Immigrants, World-Class Living',
+    overview: "Canada offers one of the world's most welcoming immigration systems with multiple pathways to permanent residency and citizenship through business investment, skilled work, and family ties.",
+    currency: 'Canadian Dollar (CAD)', language: 'English, French',
+    businessClimate: 'Strong rule of law, multicultural, G7 economy with access to US market via CUSMA/USMCA.',
+    highlights: ['Multiple PR pathways for investors', '3 years PR → eligible for citizenship', 'Universal healthcare for residents', 'Strong startup ecosystem', 'Access to US market via CUSMA'],
+    businessTypes: [
+      {
+        name: 'Federal Corporation (Canada Business Corporation)', difficulty: 'Moderate',
+        timeframe: '1–5 business days', cost: 'CAD $200 (federal) + provincial registration fees',
+        description: 'Incorporate federally under the Canada Business Corporations Act. Allows operation across all provinces.',
+        requirements: ["25% of directors must be Canadian residents (or use director services)", 'Registered office in Canada', 'No minimum capital'],
+        steps: [
+          { title: 'Choose a name or numbered company', description: 'Conduct a NUANS report to ensure your name is unique. Or use a numbered company (e.g., "1234567 Canada Inc.").', tips: 'Numbered companies are faster and cheaper.' },
+          { title: 'File Articles of Incorporation', description: 'Prepare and file Articles of Incorporation with Corporations Canada online.', tips: 'Federal incorporation costs CAD $200 online.' },
+          { title: 'Register in each province', description: 'Federal corporations must also register extra-provincially in each province they operate in.' },
+          { title: 'Register for CRA accounts', description: 'Register for a Business Number (BN) with the Canada Revenue Agency.', documents: ['Certificate of Incorporation', 'Director information'] },
+          { title: 'Open a business bank account', description: 'Open a corporate bank account at a Canadian bank.' }
+        ]
+      }
+    ],
+    residencyOptions: [
+      {
+        name: 'Start-Up Visa Program', difficulty: 'Complex',
+        timeframe: '12–36 months', cost: 'CAD $1,560 (government fees) + settlement funds',
+        description: 'Get support from a Canadian VC, angel group, or incubator and apply for PR directly.',
+        requirements: ['Letter of support from a designated Canadian organization', 'CLB 5 English or French proficiency', 'Proof of settlement funds', 'Ownership of >50% of the business'],
+        steps: [
+          { title: 'Develop your startup concept', description: 'Have an innovative business idea that can create jobs and compete globally.' },
+          { title: 'Get a letter of support from a designated organization', description: 'Apply to a designated Canadian VC fund, angel group, or incubator.', tips: 'This is the hardest step. Designated organizations include BDC Capital, Real Ventures, MaRS, and others.' },
+          { title: 'Meet language requirements', description: 'Demonstrate CLB 5 in English or French (IELTS or TEF exam).' },
+          { title: 'Gather documents and submit PR application', description: 'Submit the Start-Up Visa PR application to IRCC.', documents: ['Letter of Support', 'Language test results', 'Education credentials', 'Passport', 'Proof of funds (CAD $13,000–$25,000)'] },
+          { title: 'Receive Permanent Residency', description: 'Attend PR confirmation and receive your PR card (Maple Leaf Card).' }
+        ]
+      }
+    ],
+    citizenshipPathways: [
+      {
+        name: 'Naturalization', difficulty: 'Moderate',
+        timeframe: '12–24 months after applying', cost: 'CAD $630 per adult',
+        description: 'After 3 years of permanent residency, eligible for Canadian citizenship. Canada allows dual citizenship.',
+        requirements: ['1,095 days physically present in Canada in last 5 years', 'Income tax compliance for 3+ years', 'CLB 4 language proficiency', 'Must pass citizenship test (ages 18–54)'],
+        steps: [
+          { title: 'Maintain PR for 3 of the past 5 years (1,095 days)', description: 'Track your physical presence in Canada.' },
+          { title: 'File taxes', description: 'File Canadian income tax returns for at least 3 years.' },
+          { title: 'Submit citizenship application via IRCC portal', description: 'Apply online.', documents: ['PR card', 'Passport', 'Travel history', 'Tax notices', 'Language proof'] },
+          { title: 'Pass citizenship test', description: '20-question test on Canadian history, values, and rights (ages 18–54).', tips: 'Study using the official "Discover Canada" guide — available free online.' },
+          { title: 'Attend citizenship ceremony', description: 'Take the Oath of Citizenship and receive your certificate.' }
+        ]
+      }
+    ]
+  },
+  {
+    code: 'MT', name: 'Malta', flag: '🇲🇹', region: 'Europe',
+    tagline: 'EU Citizenship by Investment',
+    overview: "Malta is an EU member state offering one of the few remaining EU citizenship-by-investment programs. A Maltese passport grants access to live, work, and study across all 27 EU countries.",
+    currency: 'Euro (EUR)', language: 'Maltese, English',
+    businessClimate: "Pro-business EU jurisdiction with effective 5% corporate tax via Malta's full imputation refund system. Strong gaming, fintech, and aviation sectors.",
+    highlights: ['One of the few EU citizenship-by-investment programs', 'EU passport — live and work in 27 EU countries', 'English-speaking (official language)', 'Effective 5% corporate tax', 'Mediterranean lifestyle'],
+    businessTypes: [
+      {
+        name: 'Private Limited Company (Ltd)', difficulty: 'Moderate',
+        timeframe: '1–3 weeks', cost: '€1,200–€3,000 (registration + notary + legal)',
+        description: "Malta's standard company structure. Effective tax rate of ~5% via the Maltese tax refund system.",
+        requirements: ['At least 2 shareholders and 1 director', 'Minimum authorized capital €4,658 (20% paid up)', 'Registered office in Malta'],
+        steps: [
+          { title: 'Reserve company name at Malta Business Registry', description: 'Check name availability and reserve your chosen name.' },
+          { title: 'Prepare Memorandum and Articles of Association', description: 'Have a Maltese lawyer draft and execute the M&A before a Maltese notary.' },
+          { title: 'Register with Malta Business Registry', description: 'Submit incorporation documents.', documents: ['Form BO1', 'Memorandum and Articles of Association', 'Director and shareholder IDs'] },
+          { title: 'Pay share capital', description: 'Deposit at least 20% of authorized share capital (minimum ~€1,165).' },
+          { title: 'Register for VAT and Tax', description: 'Register with Malta Tax and Customs Administration.' },
+          { title: 'Open a Malta bank account', description: 'Open a corporate account with BOV, HSBC Malta, or MeDirect.', tips: 'Banking due diligence is thorough in Malta — prepare source of funds documentation.' }
+        ]
+      }
+    ],
+    residencyOptions: [
+      {
+        name: 'Malta Permanent Residence Programme (MPRP)', difficulty: 'Moderate',
+        timeframe: '4–6 months', cost: '€30,000–€60,000 (contributions + fees) + property investment',
+        description: 'Obtain Maltese (EU) permanent residency through investment. No minimum stay requirement.',
+        requirements: ['Investment as described (rent + contribution OR purchase + contribution)', 'Clean criminal record', 'Capital assets of €500,000 (€150,000 financial assets)'],
+        steps: [
+          { title: 'Engage a licensed agent (mandatory)', description: 'You must apply through a Malta-licensed Authorised Registered Mandatory (ARM) agent.' },
+          { title: 'Choose qualifying property investment', description: 'Option A: Rent €10,000–€12,000/year. Option B: Buy property €300,000–€350,000.' },
+          { title: 'Make government contribution', description: 'Pay €28,000 (renting) or €58,000 (purchasing) to the government.' },
+          { title: 'Donate €2,000 to a Maltese NGO', description: 'Donate to a Maltese registered sports, cultural, or philanthropic NGO.' },
+          { title: 'Submit MPRP application and pass due diligence', description: '4–6 months of multi-tier due diligence.', documents: ['Passport', 'Birth/marriage certificates', 'Police clearance', 'Financial statements', 'Health insurance'] },
+          { title: 'Receive Malta PR Card', description: 'Attend biometrics in Malta and receive your EU-issued residence card.' }
+        ]
+      }
+    ],
+    citizenshipPathways: [
+      {
+        name: 'Maltese Citizenship by Naturalization (MCES)', difficulty: 'Complex',
+        timeframe: '12–24 months (fast track) or 36–48 months (standard)', cost: '€600,000–€750,000 contribution + property costs',
+        description: 'One of the few remaining EU citizenship-by-investment programs. Full Maltese (EU) passport.',
+        requirements: ['12 or 36 months of Malta residence', 'Exceptional contribution €600,000–€750,000', 'Property investment (€700,000 purchase or €16,000/year rental × 5 years)', '€10,000 NGO donation', 'Net assets of €500,000+', 'Malta allows dual citizenship'],
+        steps: [
+          { title: 'Engage a licensed agent (mandatory)', description: 'All applications must be submitted through a licensed ARM.' },
+          { title: 'Obtain Malta residence permit', description: 'Hold a valid Maltese residence permit for at least 12 months (fast track) or 36 months (standard).' },
+          { title: 'Make the exceptional contribution', description: '12-month route: €750,000. 36-month route: €600,000. Plus €10,000 NGO donation.' },
+          { title: 'Invest in qualifying property', description: 'Purchase property worth €700,000+ and hold 5 years, OR rent at €16,000/year for 5 years.' },
+          { title: 'Submit MCES application and pass 4-tier due diligence', description: 'Comprehensive due diligence including third-party international firm check. 6–12 months.', documents: ['Passport', 'Certificates', 'Police clearances', 'Financial statements', 'Proof of residence and contributions'] },
+          { title: 'Attend citizenship ceremony and receive passport', description: 'Take the Oath of Allegiance and apply for your EU passport.', tips: 'Malta allows dual citizenship — you do NOT need to give up your current nationality.' }
+        ]
+      }
+    ]
+  }
+];
+
+const regions = ['All', 'Africa', 'Middle East', 'Europe', 'Asia', 'North America'];
+
+// ─── DIFFICULTY BADGE ─────────────────────────────────────────────────────────
+
+const difficultyClasses = {
+  Easy: 'bg-emerald-100 text-emerald-700',
+  Moderate: 'bg-yellow-100 text-yellow-700',
+  Complex: 'bg-red-100 text-red-700',
+};
+
+// ─── COUNTRY LIST ─────────────────────────────────────────────────────────────
+
+function CountryList({ onSelect }) {
+  const [search, setSearch] = useState('');
+  const [region, setRegion] = useState('All');
+
+  const filtered = countries.filter(c => {
+    const q = search.toLowerCase();
+    return (region === 'All' || c.region === region) &&
+      (c.name.toLowerCase().includes(q) || c.tagline.toLowerCase().includes(q) || c.region.toLowerCase().includes(q));
+  });
+
+  return (
+    <div className="space-y-8">
+      {/* Hero */}
+      <div className="text-center py-10">
+        <h2 className="text-4xl font-bold text-slate-900 mb-3">Start Your Global Journey</h2>
+        <p className="text-lg text-slate-500 max-w-2xl mx-auto">
+          Step-by-step guides for registering a business, obtaining residency, or gaining citizenship worldwide.
+        </p>
+        <div className="flex justify-center gap-10 mt-8">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-blue-600">{countries.length}</div>
+            <div className="text-sm text-slate-500 mt-1">Countries</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-emerald-600">{countries.reduce((s, c) => s + c.businessTypes.length, 0)}</div>
+            <div className="text-sm text-slate-500 mt-1">Business Guides</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-purple-600">{countries.reduce((s, c) => s + c.residencyOptions.length + c.citizenshipPathways.length, 0)}</div>
+            <div className="text-sm text-slate-500 mt-1">Residency & Citizenship Pathways</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Search & filter */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text" placeholder="Search countries..."
+            value={search} onChange={e => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
+          />
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          {regions.map(r => (
+            <button key={r} onClick={() => setRegion(r)}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                region === r ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >{r}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Grid */}
+      {filtered.length === 0 ? (
+        <div className="text-center py-16 text-slate-500">
+          No countries found. <button onClick={() => { setSearch(''); setRegion('All'); }} className="text-blue-600 underline ml-1">Clear filters</button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filtered.map(c => (
+            <button key={c.code} onClick={() => onSelect(c)}
+              className="group text-left bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-blue-300 hover:shadow-md hover:-translate-y-1 transition-all duration-200"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <span className="text-5xl">{c.flag}</span>
+                <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-full">{c.region}</span>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors">{c.name}</h3>
+              <p className="text-sm text-slate-500 mb-4">{c.tagline}</p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {c.businessTypes.length > 0 && (
+                  <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">🏢 {c.businessTypes.length} Business</span>
+                )}
+                {c.residencyOptions.length > 0 && (
+                  <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full">🏠 {c.residencyOptions.length} Residency</span>
+                )}
+                {c.citizenshipPathways.length > 0 && (
+                  <span className="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-full">🛂 {c.citizenshipPathways.length} Citizenship</span>
+                )}
+              </div>
+              <div className="space-y-1 mb-4">
+                {c.highlights.slice(0,2).map((h, i) => (
+                  <div key={i} className="flex items-start gap-2 text-xs text-slate-600">
+                    <svg className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    {h}
+                  </div>
+                ))}
+              </div>
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                <span className="text-xs text-slate-400">{c.currency}</span>
+                <span className="text-sm font-medium text-blue-600 flex items-center gap-1">
+                  Explore guides
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── GUIDE CARD ───────────────────────────────────────────────────────────────
+
+function GuideCard({ guide, category, onSelect }) {
+  const borderColor = { business: 'border-blue-200 hover:border-blue-400', residency: 'border-emerald-200 hover:border-emerald-400', citizenship: 'border-purple-200 hover:border-purple-400' };
+  const textColor = { business: 'text-blue-600', residency: 'text-emerald-600', citizenship: 'text-purple-600' };
+  return (
+    <button onClick={onSelect}
+      className={`group text-left w-full bg-white rounded-xl border-2 ${borderColor[category]} p-5 hover:shadow-md transition-all duration-200`}
+    >
+      <div className="flex items-start justify-between gap-4 mb-3">
+        <h4 className={`font-semibold text-slate-900 group-hover:${textColor[category]} transition-colors`}>{guide.name}</h4>
+        <span className={`shrink-0 text-xs font-medium px-2 py-1 rounded-full ${difficultyClasses[guide.difficulty]}`}>{guide.difficulty}</span>
+      </div>
+      <p className="text-sm text-slate-600 mb-4 line-clamp-2">{guide.description}</p>
+      <div className="flex flex-wrap gap-4 text-xs text-slate-500">
+        <div className="flex items-center gap-1">⏱ {guide.timeframe}</div>
+        <div className="flex items-center gap-1">💰 {guide.cost}</div>
+        <div className="flex items-center gap-1">📋 {guide.steps.length} steps</div>
+      </div>
+      <div className={`mt-4 flex items-center gap-1 text-sm font-medium ${textColor[category]}`}>
+        View step-by-step guide
+        <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+    </button>
+  );
+}
+
+// ─── COUNTRY DETAIL ───────────────────────────────────────────────────────────
+
+function CountryDetail({ country, onSelectGuide }) {
+  const [tab, setTab] = useState('overview');
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: '📋' },
+    { id: 'business', label: 'Business Setup', icon: '🏢', count: country.businessTypes.length },
+    { id: 'residency', label: 'Residency', icon: '🏠', count: country.residencyOptions.length },
+    { id: 'citizenship', label: 'Citizenship', icon: '🛂', count: country.citizenshipPathways.length },
+  ];
+  return (
+    <div className="space-y-8">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-gradient-to-r from-slate-700 to-slate-900 px-8 py-10">
+          <div className="flex items-center gap-6">
+            <span className="text-8xl">{country.flag}</span>
+            <div>
+              <div className="text-sm font-medium text-slate-300 mb-1">{country.region}</div>
+              <h2 className="text-4xl font-bold text-white mb-2">{country.name}</h2>
+              <p className="text-slate-300 text-lg">{country.tagline}</p>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-slate-200 border-t border-slate-200">
+          {[['Currency', country.currency], ['Language', country.language], ['Business Guides', `${country.businessTypes.length} guides`], ['Pathways', `${country.residencyOptions.length + country.citizenshipPathways.length} options`]].map(([k, v]) => (
+            <div key={k} className="px-6 py-4">
+              <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">{k}</div>
+              <div className="font-medium text-slate-900 text-sm">{v}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="flex border-b border-slate-200 overflow-x-auto">
+          {tabs.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              className={`flex items-center gap-2 px-5 py-4 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${
+                tab === t.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+              }`}
+            >
+              {t.icon} {t.label}
+              {t.count !== undefined && (
+                <span className={`px-1.5 py-0.5 rounded-full text-xs ${tab === t.id ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'}`}>{t.count}</span>
+              )}
+            </button>
+          ))}
+        </div>
+        <div className="p-6">
+          {tab === 'overview' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 mb-3">About</h3>
+                <p className="text-slate-600 leading-relaxed">{country.overview}</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 mb-3">Business Climate</h3>
+                <p className="text-slate-600 leading-relaxed">{country.businessClimate}</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Key Highlights</h3>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {country.highlights.map((h, i) => (
+                    <div key={i} className="flex items-start gap-3 bg-slate-50 rounded-xl p-3">
+                      <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                        <svg className="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <span className="text-sm text-slate-700">{h}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="grid sm:grid-cols-3 gap-4 pt-4 border-t border-slate-200">
+                {[['business','🏢','Business Guides','Register a business'], ['residency','🏠','Residency Options','Live legally'], ['citizenship','🛂','Citizenship Pathways','Become a citizen']].map(([cat, icon, label, sub]) => {
+                  const list = cat === 'business' ? country.businessTypes : cat === 'residency' ? country.residencyOptions : country.citizenshipPathways;
+                  if (!list.length) return null;
+                  const bg = { business: 'bg-blue-50 hover:bg-blue-100 text-blue-700', residency: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700', citizenship: 'bg-purple-50 hover:bg-purple-100 text-purple-700' };
+                  return (
+                    <button key={cat} onClick={() => setTab(cat)} className={`flex items-center gap-3 ${bg[cat]} rounded-xl p-4 transition-colors`}>
+                      <span className="text-2xl">{icon}</span>
+                      <div className="text-left">
+                        <div className="font-semibold text-sm">{list.length} {label}</div>
+                        <div className="text-xs opacity-70">{sub}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {['business', 'residency', 'citizenship'].map(cat => {
+            if (tab !== cat) return null;
+            const list = cat === 'business' ? country.businessTypes : cat === 'residency' ? country.residencyOptions : country.citizenshipPathways;
+            return (
+              <div key={cat} className="space-y-4">
+                <p className="text-sm text-slate-500 mb-4">Choose a guide to see step-by-step instructions.</p>
+                {list.length === 0 ? (
+                  <p className="text-slate-500 text-center py-8">No guides available yet.</p>
+                ) : list.map((guide, i) => (
+                  <GuideCard key={i} guide={guide} category={cat} onSelect={() => onSelectGuide(cat, guide)} />
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── GUIDE DETAIL ─────────────────────────────────────────────────────────────
+
+function GuideDetail({ country, category, guide, onBack }) {
+  const [expanded, setExpanded] = useState(new Set([0]));
+  const catConfig = {
+    business: { label: 'Business Setup', icon: '🏢', stepBg: 'bg-blue-600', badge: 'bg-blue-100 text-blue-700', progressBg: 'bg-blue-600' },
+    residency: { label: 'Residency', icon: '🏠', stepBg: 'bg-emerald-600', badge: 'bg-emerald-100 text-emerald-700', progressBg: 'bg-emerald-600' },
+    citizenship: { label: 'Citizenship', icon: '🛂', stepBg: 'bg-purple-600', badge: 'bg-purple-100 text-purple-700', progressBg: 'bg-purple-600' },
+  };
+  const cfg = catConfig[category];
+
+  function toggle(i) {
+    setExpanded(prev => {
+      const next = new Set(prev);
+      next.has(i) ? next.delete(i) : next.add(i);
+      return next;
+    });
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-6">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-gradient-to-r from-slate-700 to-slate-900 px-6 py-6">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-2xl">{country.flag}</span>
+            <span className={`text-sm font-medium px-2.5 py-1 rounded-full ${cfg.badge}`}>{cfg.icon} {cfg.label}</span>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">{guide.name}</h2>
+          <p className="text-slate-300">{guide.description}</p>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-slate-100 border-t border-slate-100">
+          {[['Difficulty', <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${difficultyClasses[guide.difficulty]}`}>{guide.difficulty}</span>],
+            ['Timeframe', guide.timeframe], ['Est. Cost', guide.cost], ['Steps', `${guide.steps.length} steps`]].map(([k, v]) => (
+            <div key={k} className="px-4 py-3">
+              <div className="text-xs text-slate-500 mb-1">{k}</div>
+              <div className="text-sm font-medium text-slate-900">{v}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Requirements */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <h3 className="font-semibold text-slate-900 mb-4">✅ Requirements Checklist</h3>
+        <ul className="space-y-2">
+          {guide.requirements.map((r, i) => (
+            <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
+              <div className="w-5 h-5 rounded border-2 border-slate-300 mt-0.5 shrink-0" />
+              {r}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Steps */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-slate-900">📋 Step-by-Step Guide</h3>
+          <div className="flex gap-2 text-xs text-slate-500">
+            <button onClick={() => setExpanded(new Set(guide.steps.map((_, i) => i)))} className="hover:text-slate-700">Expand all</button>
+            <span className="text-slate-300">|</span>
+            <button onClick={() => setExpanded(new Set())} className="hover:text-slate-700">Collapse all</button>
+          </div>
+        </div>
+
+        <div className="mb-5 flex items-center gap-3">
+          <div className="flex-1 bg-slate-100 rounded-full h-2">
+            <div className={`${cfg.progressBg} h-2 rounded-full transition-all duration-500`} style={{ width: `${(expanded.size / guide.steps.length) * 100}%` }} />
+          </div>
+          <span className="text-xs text-slate-500 whitespace-nowrap">{expanded.size}/{guide.steps.length} reviewed</span>
+        </div>
+
+        <div className="space-y-3">
+          {guide.steps.map((step, i) => (
+            <div key={i} className={`border-2 rounded-xl transition-all ${expanded.has(i) ? 'border-slate-300 shadow-md' : 'border-slate-200 hover:border-slate-300'} bg-white`}>
+              <button onClick={() => toggle(i)} className="w-full text-left p-4 flex items-start gap-4">
+                <div className={`shrink-0 w-8 h-8 rounded-full ${cfg.stepBg} text-white flex items-center justify-center font-bold text-sm`}>{i + 1}</div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-slate-900">{step.title}</h4>
+                  {!expanded.has(i) && <p className="text-sm text-slate-500 mt-0.5 line-clamp-1">{step.description}</p>}
+                </div>
+                <svg className={`shrink-0 w-5 h-5 text-slate-400 transition-transform mt-0.5 ${expanded.has(i) ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {expanded.has(i) && (
+                <div className="px-4 pb-4 pt-2 border-t border-slate-100 space-y-3">
+                  <p className="text-slate-700 leading-relaxed">{step.description}</p>
+                  {step.documents && step.documents.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Documents needed</p>
+                      <ul className="space-y-1.5">
+                        {step.documents.map((d, j) => (
+                          <li key={j} className="flex items-start gap-2 text-sm text-slate-600">
+                            <span className="text-slate-400 mt-0.5">📄</span>{d}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {step.tips && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex gap-2">
+                      <span className="text-lg shrink-0">💡</span>
+                      <p className="text-sm text-amber-800">{step.tips}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex gap-3">
+        <span className="text-2xl shrink-0">⚠️</span>
+        <div>
+          <h4 className="font-semibold text-amber-900 mb-1">Important Disclaimer</h4>
+          <p className="text-sm text-amber-800">This guide provides general educational information only. Laws, fees, and requirements change frequently. Always consult a qualified local lawyer or immigration attorney before taking action.</p>
+        </div>
+      </div>
+
+      <button onClick={onBack} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-sm transition-colors">
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to {country.name} guides
+      </button>
+    </div>
+  );
+}
+
+// ─── APP ROOT ─────────────────────────────────────────────────────────────────
+
+function App() {
+  const [view, setView] = useState({ type: 'list' });
+
+  function goTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  function goHome() { setView({ type: 'list' }); goTop(); }
+  function goCountry(c) { setView({ type: 'country', country: c }); goTop(); }
+  function goGuide(cat, guide) { setView({ ...view, type: 'guide', category: cat, guide }); goTop(); }
+  function goBack() {
+    if (view.type === 'guide') setView({ type: 'country', country: view.country });
+    else setView({ type: 'list' });
+    goTop();
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <button onClick={goHome} className="flex items-center gap-3 group">
+            <div className="text-2xl">🌍</div>
+            <div>
+              <h1 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Global Business Guide</h1>
+              <p className="text-xs text-slate-500 hidden sm:block">Business, Residency & Citizenship pathways worldwide</p>
+            </div>
+          </button>
+          {view.type !== 'list' && (
+            <button onClick={goBack}
+              className="flex items-center gap-2 text-sm text-slate-600 hover:text-blue-600 transition-colors bg-slate-100 px-3 py-2 rounded-lg"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back
+            </button>
+          )}
+        </div>
+      </header>
+
+      {/* Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {view.type === 'list' && <CountryList onSelect={goCountry} />}
+        {view.type === 'country' && <CountryDetail country={view.country} onSelectGuide={goGuide} />}
+        {view.type === 'guide' && <GuideDetail country={view.country} category={view.category} guide={view.guide} onBack={goBack} />}
+      </main>
+
+      <footer className="mt-16 border-t border-slate-200 bg-white/50">
+        <div className="max-w-7xl mx-auto px-4 py-8 text-center">
+          <p className="text-sm text-slate-500">
+            <strong>Disclaimer:</strong> General information only. Laws change frequently. Always consult a qualified lawyer before taking action.
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode><App /></React.StrictMode>
+);
+</script>
+</body>
+</html>
