@@ -7,6 +7,7 @@ import { TasksSettingsProvider } from './contexts/TasksSettingsContext';
 import { WebSocketProvider } from './contexts/WebSocketContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppContent from './components/app/AppContent';
+import CountryGuide from './components/country-guide/CountryGuide';
 import i18n from './i18n/config.js';
 
 export default function App() {
@@ -17,14 +18,27 @@ export default function App() {
           <WebSocketProvider>
             <TasksSettingsProvider>
               <TaskMasterProvider>
-                <ProtectedRoute>
-                  <Router basename={window.__ROUTER_BASENAME__ || ''}>
-                    <Routes>
-                      <Route path="/" element={<AppContent />} />
-                      <Route path="/session/:sessionId" element={<AppContent />} />
-                    </Routes>
-                  </Router>
-                </ProtectedRoute>
+                <Router basename={window.__ROUTER_BASENAME__ || ''}>
+                  <Routes>
+                    <Route path="/country-guide" element={<CountryGuide />} />
+                    <Route
+                      path="/"
+                      element={
+                        <ProtectedRoute>
+                          <AppContent />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/session/:sessionId"
+                      element={
+                        <ProtectedRoute>
+                          <AppContent />
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Routes>
+                </Router>
               </TaskMasterProvider>
             </TasksSettingsProvider>
           </WebSocketProvider>
